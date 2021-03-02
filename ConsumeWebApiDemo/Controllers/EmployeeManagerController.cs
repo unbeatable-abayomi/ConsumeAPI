@@ -90,5 +90,47 @@ namespace ConsumeWebApiDemo.Controllers
             }
             return View(model);
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            HttpResponseMessage response = await client.GetAsync($"{employeeApiUrl}/{id}");
+            string stringData = await response.Content.ReadAsStringAsync();
+
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            Employee model = JsonSerializer.Deserialize<Employee>(stringData, options);
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Employee model)
+        {
+            if (ModelState.IsValid)
+            {
+                string stringData = JsonSerializer.Serialize(model);
+
+                var contentData = new StringContent(stringData, System.Text.Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PutAsync($"{employeeApiUrl}/{model.EmployeeId}",contentData);
+                if (response.IsSuccessStatusCode)
+                {
+
+                   
+                    ViewBag.Message = "Employee Updated Sucessfully";
+
+                }
+                else
+                {
+                    ViewBag.Message = "Error While Calling the API";
+                }
+
+            }
+            return View(model);
+        }
     }
 }
